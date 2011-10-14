@@ -6,7 +6,7 @@ CRUD admin. Useful for quickly seeing which jobs have run, last time they ran, h
 In order to use this module you'll need to add it do your applications dependencies.yaml
 and run:
 
-> play dependencies {appName}
+> $ play dependencies {appName}
 
 your application.conf will also need a db enabled as well. No persistent data yet, so you can get away with 
 
