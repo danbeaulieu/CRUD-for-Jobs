@@ -1,0 +1,31 @@
+#{extends 'CRUD/layout.html' /}
+#{set title:messages.get('crud.list.title', type.name) /}
+
+<div id="crudList" class="${type.name}">
+
+    <h2 id="crudListTitle">&{'crud.list.title', type.name}</h2>
+
+    <div id="crudListSearch">
+        #{crud.search /}
+    </div>
+
+    <div id="crudListTable">
+        #{crud.table fields:['name', 'lastRun', 'wasError', 'type', 'value']}
+        
+	        #{crud.custom 'wasError'}
+	        	%{ if(object.lastRun!=null){ %}
+		       		%{ if(object.wasError==false){ }%
+		       			<span style="color:green;font-size:30px">&bull;</span>
+		       		%{ } else { }%
+	                    <span style="color:red">Yes</span>
+	                %{ } }%
+	            %{ } }%
+	   		#{/crud.custom}
+   		#{/crud.table}
+    </div>
+
+    <div id="crudListPagination">
+        #{crud.pagination /}
+    </div>
+
+</div>
