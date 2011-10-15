@@ -1,4 +1,5 @@
 #{extends 'CRUD/layout.html' /}
+ #{script 'jquery-1.5.2.min.js'/}
 #{set title:messages.get('crud.list.title', type.name) /}
 
 <div id="crudList" class="${type.name}">
@@ -10,7 +11,7 @@
     </div>
 
     <div id="crudListTable">
-        #{crud.table fields:['name', 'lastRun', 'wasError', 'type', 'value']}
+        #{crud.table fields:['name', 'lastRun', 'wasError', 'type', 'value', 'manage']}
         
 	        #{crud.custom 'wasError'}
 	        	%{ if(object.lastRun!=null){ %}
@@ -20,6 +21,13 @@
 	                    <span style="color:red">Yes</span>
 	                %{ } }%
 	            %{ } }%
+			#{/crud.custom}
+	   		
+			#{crud.custom 'manage'}
+	   			<a href="@{runNow(object.name)}" onClick="$.get(showUserAction({jobClass: '${object.name}'})); return false;">Run Now?</a>
+	   			<script type="text/javascript">
+				    var showUserAction = #{jsAction @Jobs.runNow(':jobClass') /}
+				</script>
 	   		#{/crud.custom}
    		#{/crud.table}
     </div>
