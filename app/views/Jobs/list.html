@@ -1,6 +1,16 @@
 #{extends 'CRUD/layout.html' /}
- #{script 'jquery-1.5.2.min.js'/}
+#{script 'jquery-1.5.2.min.js'/}
 #{set title:messages.get('crud.list.title', type.name) /}
+
+<script type="text/javascript">
+
+	var showUserAction = #{jsAction @Jobs.runNow(':jobClass') /}
+ 
+	function runJob(className) {
+		$.get(showUserAction({jobClass: className}));
+		// $('#crudBreadcrumb').after('<div class="crudFlash flashSuccess">Success</div>');
+	}
+</script>
 
 <div id="crudList" class="${type.name}">
 
@@ -24,10 +34,8 @@
 			#{/crud.custom}
 	   		
 			#{crud.custom 'manage'}
-	   			<a href="@{runNow(object.name)}" onClick="$.get(showUserAction({jobClass: '${object.name}'})); return false;">Run Now?</a>
-	   			<script type="text/javascript">
-				    var showUserAction = #{jsAction @Jobs.runNow(':jobClass') /}
-				</script>
+	   			<a href="@{runNow(object.name)}" onClick="runJob('${object.name}'); return false;">Run Now?</a>
+				
 	   		#{/crud.custom}
    		#{/crud.table}
     </div>
@@ -35,5 +43,4 @@
     <div id="crudListPagination">
         #{crud.pagination /}
     </div>
-
 </div>

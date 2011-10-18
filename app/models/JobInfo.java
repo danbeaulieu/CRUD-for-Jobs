@@ -21,7 +21,8 @@ public class JobInfo extends Model {
 		EVERY,
 		CRON,
 		STARTUP,
-		SHUTDOWN
+		SHUTDOWN,
+		UNSCHEDULED
 	}
 	
 	@Transient
@@ -46,6 +47,12 @@ public class JobInfo extends Model {
 		init();
 	}
 	
+	public JobInfo(Class clazz) {
+		this.job = null;
+		this.name = clazz.getCanonicalName();
+		this.type = Type.UNSCHEDULED;
+	}
+
 	private void init() {
 	
 		try {

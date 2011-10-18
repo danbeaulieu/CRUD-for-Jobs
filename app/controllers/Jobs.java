@@ -1,24 +1,49 @@
 package controllers;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.apache.commons.lang.StringUtils;
 
 import models.JobInfo;
 import play.Logger;
+import play.Play;
+import play.classloading.ApplicationClasses.ApplicationClass;
 import play.exceptions.UnexpectedException;
 import play.jobs.Job;
 import play.jobs.JobsPlugin;
+import play.modules.crudjobs.ProgressHandler;
+import play.modules.crudjobs.ProgressJob;
 import play.mvc.Before;
 
 @CRUD.For(JobInfo.class)
 public class Jobs extends CRUD {
 
+	/*
+	 * Executed before every request handled by this controller
+	 */
 	@Before
 	public static void doBefore() {
 		
+		Set<String> scheduledNames = new HashSet<String>();
+		// get all of the scheduled jobs
+		// this should probably be an update instead of clearing them all out
+		// and adding them back in
 		JobInfo.deleteAll();
 		for (Job j : JobsPlugin.scheduledJobs) {
+			scheduledNames.add(j.toString());
 			new JobInfo(j).save();
     	}
+		// get all of the unscheduled jobs
+		// this really only needs to happen once
+		for (Class clazz : Play.classloader.getAllClasses()) {
+			if ((clazz != null) && Job.class.isAssignableFrom(clazz)) {
+				if(!scheduledNames.contains(clazz.getCanonicalName())) {
+					new JobInfo(clazz).save();
+				}
+			}
+		}
 	}
 	
 	public static void blank() throws Exception {
@@ -59,6 +84,14 @@ public class Jobs extends CRUD {
 
 			// Fire Job
 			Job job = (Job) o;
+			
+			if (job instanceof ProgressJob) {
+				((ProgressJob) job).registerProgressHandler(new ProgressHandler() {
+					public void handle(Integer value) {
+						Logger.info("Handled progress " + value);
+					}
+				});
+			}
 			job.now();
 			Logger.info("Started Job: %s", job);
 		} catch (Throwable t) {
