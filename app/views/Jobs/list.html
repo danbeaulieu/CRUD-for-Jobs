@@ -1,14 +1,37 @@
 #{extends 'CRUD/layout.html' /}
 #{script 'jquery-1.5.2.min.js'/}
+#{script 'jquery-ui-1.8.16.custom.min.js' /}
+#{script 'ajaxPoll.js' /}
+#{get 'moreStyles' /}
+<link rel="stylesheet" type="text/css" media="screen" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.14/themes/ui-lightness/jquery-ui.css" charset="${_response_encoding}"/>
+
 #{set title:messages.get('crud.list.title', type.name) /}
 
 <script type="text/javascript">
 
-	var showUserAction = #{jsAction @Jobs.runNow(':jobClass') /}
- 
-	function runJob(className) {
-		$.get(showUserAction({jobClass: className}));
-		// $('#crudBreadcrumb').after('<div class="crudFlash flashSuccess">Success</div>');
+	$.ajaxPollSettings.pollingType = "interval";
+	$.ajaxPollSettings.interval = 1000;
+	$.ajaxPollSettings.maxInterval = 1000;
+
+	var runJobAction = #{jsAction @Jobs.runNow(':jobClass') /}
+ 	var jobProgressAction = #{jsAction @Jobs.jobProgress(':jobKey') /}
+ 	
+ 	function runJob(className) {
+ 		$.get(runJobAction({jobClass: className}), function(data) {
+			if (data.hasProgress) {
+				$.ajaxPoll({
+					url: jobProgressAction({jobKey: data.key}),
+					type: "GET",
+					dataType: "json",
+					successCondition: function(result) {
+				        return result.progress == 100;
+				    },
+					success: function(data) {
+						$("#" + className + "-progress").progressbar({ value: data.progress });
+					}
+				});
+			}
+		});
 	}
 </script>
 
@@ -21,9 +44,9 @@
     </div>
 
     <div id="crudListTable">
-        #{crud.table fields:['name', 'lastRun', 'wasError', 'type', 'value', 'manage']}
+        #{crud.table fields:['name', 'lastRun', 'Status', 'type', 'value', 'manage', 'progress']}
         
-	        #{crud.custom 'wasError'}
+	        #{crud.custom 'Status'}
 	        	%{ if(object.lastRun!=null){ %}
 		       		%{ if(object.wasError==false){ }%
 		       			<span style="color:green;font-size:30px">&bull;</span>
@@ -35,6 +58,10 @@
 	   		
 			#{crud.custom 'manage'}
 	   			<a href="@{runNow(object.name)}" onClick="runJob('${object.name}'); return false;">Run Now?</a>
+				
+	   		#{/crud.custom}
+	   		#{crud.custom 'progress'}
+	   			<div id="${object.name}-progress"></div>
 				
 	   		#{/crud.custom}
    		#{/crud.table}

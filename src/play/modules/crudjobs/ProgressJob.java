@@ -16,6 +16,10 @@ public abstract class ProgressJob extends Job {
 		this.handlers.add(h);
 	}
 	
+	public void removeProgressHandler(ProgressHandler h) {
+		this.handlers.remove(h);
+	}
+	
 	public void publishProgress(Integer value) {
 		if (handlers != null) {
 			for (ProgressHandler handler : handlers) {
@@ -30,6 +34,15 @@ public abstract class ProgressJob extends Job {
 	public void _finally() {
 		Logger.info("ProgressJob finally");
 		publishProgress(100);
+		removeHandlers();
 		super._finally();
+	}
+
+	private void removeHandlers() {
+		if (handlers != null) {
+			for (ProgressHandler handler : handlers) {
+				removeProgressHandler(handler);
+			}
+		}
 	}
 }
